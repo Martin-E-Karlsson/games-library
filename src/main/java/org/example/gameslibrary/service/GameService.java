@@ -4,46 +4,51 @@ import org.example.gameslibrary.dto.CreateGameDto;
 import org.example.gameslibrary.dto.GameDto;
 import org.example.gameslibrary.dto.UpdateGameDto;
 import org.example.gameslibrary.entity.Game;
+import org.example.gameslibrary.mapper.GameMapper;
 import org.example.gameslibrary.repository.GameRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class GameService {
 
     private final GameRepository gameRepository;
+    private final GameMapper gameMapper;
 
-    public GameService(GameRepository gameRepository) {
+    public GameService(GameRepository gameRepository, GameMapper gameMapper) {
         this.gameRepository = gameRepository;
+        this.gameMapper = gameMapper;
     }
 
     public List<GameDto> findAll() {
         return gameRepository.findAll().stream()
-                .map(this::toDto)
+                .map(gameMapper::toDto)
                 .toList();
     }
 
     public GameDto findById(Long id) {
         Game game = gameRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Game not found with id: " + id)); //Placeholder until ResourceNotFoundException is implemented
-        return toDto(game);
+        return gameMapper.toDto(game);
     }
 
     public GameDto create(CreateGameDto createDto) {
         validateTitle(createDto.getTitle(), null);
         validatePrice(createDto.getPrice());
-        validateCategories(createDto.getCategories());
 
-        Game game = toEntity(createDto);
+        Game game = gameMapper.toEntity(createDto);
+        game.setCategories(deduplicateCategories(createDto.getCategories()));
+
         Game saved = gameRepository.save(game);
-        return toDto(saved);
+        return gameMapper.toDto(saved);
     }
 
     public GameDto update(UpdateGameDto updateDto) {
         Game foundGame = gameRepository.findById(updateDto.getId())
-                .orElseThrow(() -> new RuntimeException("Game not found with id: " + updateDto.getId())); //Placeholder until ResourceNotFoundException is implemented
+                .orElseThrow(() -> new RuntimeException("Game not found with id: " + updateDto.getId()));
 
         if (updateDto.getTitle() != null) {
             validateTitle(updateDto.getTitle(), foundGame.getId());
@@ -54,19 +59,17 @@ public class GameService {
         }
         if (updateDto.getReleaseDate() != null) {
             foundGame.setReleaseDate(updateDto.getReleaseDate());
-
         }
         if (updateDto.getPrice() != null) {
             validatePrice(updateDto.getPrice());
             foundGame.setPrice(updateDto.getPrice());
         }
         if (updateDto.getCategories() != null) {
-            validateCategories(updateDto.getCategories());
-            foundGame.setCategories(updateDto.getCategories());
+            foundGame.setCategories(mergeCategories(foundGame.getCategories(), updateDto.getCategories()));
         }
 
         Game saved = gameRepository.save(foundGame);
-        return toDto(saved);
+        return gameMapper.toDto(saved);
     }
 
     public void deleteById(Long id) {
@@ -92,21 +95,26 @@ public class GameService {
         }
     }
 
-    private void validateCategories(List<String> categories) {
+    private List<String> deduplicateCategories(List<String> categories) {
         if (categories == null) {
-            return;
+            return new ArrayList<>();
         }
-        long uniqueCount = categories.stream().map(String::toLowerCase).distinct().count();
-        if (uniqueCount != categories.size()) {
-            throw new RuntimeException("Categories must not contain duplicates"); // Placeholder until ResourceNotFoundException is implemented
+        List<String> unique = new ArrayList<>();
+        for (String category : categories) {
+            if (unique.stream().noneMatch(c -> c.equalsIgnoreCase(category))) {
+                unique.add(category);
+            }
         }
+        return unique;
     }
 
-    private GameDto toDto(Game game) {
-        return null; // Mapper will replace this
-    }
-
-    private Game toEntity(CreateGameDto dto) {
-        return null; // Mapper will replace this
+    private List<String> mergeCategories(List<String> existing, List<String> incoming) {
+        List<String> merged = new ArrayList<>(existing);
+        for (String category : incoming) {
+            if (merged.stream().noneMatch(c -> c.equalsIgnoreCase(category))) {
+                merged.add(category);
+            }
+        }
+        return merged;
     }
 }
