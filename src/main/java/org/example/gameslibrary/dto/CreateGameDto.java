@@ -1,20 +1,15 @@
 package org.example.gameslibrary.dto;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-@Entity
-public class Game {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(nullable = false)
-    private Long id;
+public class CreateGameDto implements Serializable {
 
     @NotBlank
     private String title;
@@ -23,24 +18,24 @@ public class Game {
     private String description;
 
     @PastOrPresent
+    @NotNull
     private LocalDate releaseDate;
 
-    @NotBlank
+    @NotNull
     private BigDecimal price;
 
-    @NotBlank
     private List<String> categories;
 
-    public Game() {
+    public CreateGameDto() {
         // Constructor required by JPA
     }
 
-    public Long getId() {
-        return id;
+    public String getTitle() {
+        return title;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getDescription() {
@@ -73,13 +68,5 @@ public class Game {
 
     public void setCategories(List<String> categories) {
         this.categories = categories;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 }
