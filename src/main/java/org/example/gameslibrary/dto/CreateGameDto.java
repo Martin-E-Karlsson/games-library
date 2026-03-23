@@ -27,7 +27,7 @@ public class CreateGameDto implements Serializable {
     private List<String> categories;
 
     public CreateGameDto() {
-        // Constructor required by JPA
+        // No-arg constructor needed by Spring MVC for form binding
     }
 
     public String getTitle() {

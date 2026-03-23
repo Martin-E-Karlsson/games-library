@@ -25,7 +25,7 @@ public class UpdateGameDto implements Serializable {
     private List<String> categories;
 
     public UpdateGameDto() {
-        // Constructor required by JPA
+        // No-arg constructor needed by Spring MVC for form binding
     }
 
     public Long getId() {
