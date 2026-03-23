@@ -7,6 +7,9 @@ import org.example.gameslibrary.entity.Game;
 import org.example.gameslibrary.mapper.GameMapper;
 import org.example.gameslibrary.repository.GameRepository;
 import org.springframework.stereotype.Service;
+import org.example.gameslibrary.exception.ResourceNotFoundException;
+import org.example.gameslibrary.exception.DuplicateTitleException;
+import org.example.gameslibrary.exception.InvalidPriceException;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -31,7 +34,7 @@ public class GameService {
 
     public GameDto findById(Long id) {
         Game game = gameRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Game not found with id: " + id)); //Placeholder until ResourceNotFoundException is implemented
+                .orElseThrow(() -> new ResourceNotFoundException("Game not found with id: " + id));
         return gameMapper.toDto(game);
     }
 
@@ -48,7 +51,7 @@ public class GameService {
 
     public GameDto update(UpdateGameDto updateDto) {
         Game foundGame = gameRepository.findById(updateDto.getId())
-                .orElseThrow(() -> new RuntimeException("Game not found with id: " + updateDto.getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Game not found with id: " + updateDto.getId()));
 
         if (updateDto.getTitle() != null) {
             validateTitle(updateDto.getTitle(), foundGame.getId());
@@ -74,7 +77,7 @@ public class GameService {
 
     public void deleteById(Long id) {
         if (!gameRepository.existsById(id)) {
-            throw new RuntimeException("Game not found with id: " + id); // Placeholder until ResourceNotFoundException is implemented
+            throw new ResourceNotFoundException("Game not found with id: " + id);
         }
         gameRepository.deleteById(id);
     }
@@ -85,13 +88,13 @@ public class GameService {
                 .filter(game -> !game.getId().equals(excludeId))
                 .findFirst()
                 .ifPresent(game -> {
-                    throw new RuntimeException("A game with the title '" + title + "' already exists");
+                    throw new DuplicateTitleException("A game with the title '" + title + "' already exists");
                 });
     }
 
     private void validatePrice(BigDecimal price) {
         if (price.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new RuntimeException("Price must be positive"); // Placeholder until ResourceNotFoundException is implemented
+            throw new InvalidPriceException("Price must be positive");
         }
     }
 
