@@ -8,13 +8,9 @@ import org.example.gameslibrary.service.GameService;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/games")
@@ -49,9 +45,10 @@ public class GameController {
     }
 
     @PostMapping("/create")
-    public String createGame(@Valid CreateGameDto game, BindingResult bindingResult, Model model) {
+    public String createGame(@Valid @ModelAttribute("game") CreateGameDto game, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("game", game);
+            model.addAttribute("bindingResult", bindingResult);
             return "games/create";
         }
         gameService.create(game);
@@ -66,10 +63,11 @@ public class GameController {
     }
 
     @PostMapping("/edit/{id}")
-    public String updateGame(@PathVariable Long id, @Valid UpdateGameDto game,
+    public String updateGame(@PathVariable Long id, @Valid @ModelAttribute("game") UpdateGameDto game,
                              BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("game", game);
+            model.addAttribute("bindingResult", bindingResult);
             return "games/edit";
         }
         game.setId(id);
