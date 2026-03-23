@@ -101,8 +101,9 @@ public class GameService {
         }
         List<String> unique = new ArrayList<>();
         for (String category : categories) {
-            if (unique.stream().noneMatch(c -> c.equalsIgnoreCase(category))) {
-                unique.add(category);
+            if (category != null && !category.isBlank()
+                    && unique.stream().noneMatch(c -> c.equalsIgnoreCase(category))) {
+                unique.add(category.trim());
             }
         }
         return unique;
@@ -111,8 +112,9 @@ public class GameService {
     private List<String> mergeCategories(List<String> existing, List<String> incoming) {
         List<String> merged = new ArrayList<>(existing);
         for (String category : incoming) {
-            if (merged.stream().noneMatch(c -> c.equalsIgnoreCase(category))) {
-                merged.add(category);
+            if (category != null && !category.isBlank()
+                    && merged.stream().noneMatch(c -> c.equalsIgnoreCase(category.trim()))) {
+                merged.add(category.trim());
             }
         }
         return merged;
