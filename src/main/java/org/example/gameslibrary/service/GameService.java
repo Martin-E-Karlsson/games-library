@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.example.gameslibrary.exception.ResourceNotFoundException;
 import org.example.gameslibrary.exception.DuplicateTitleException;
 import org.example.gameslibrary.exception.InvalidPriceException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -26,10 +28,23 @@ public class GameService {
         this.gameMapper = gameMapper;
     }
 
-    public List<GameDto> findAll() {
-        return gameRepository.findAll().stream()
-                .map(gameMapper::toDto)
-                .toList();
+    public Page<GameDto> findAll(String title, String category, Pageable pageable) {
+        Page<Game> games;
+
+        boolean hasTitle = title != null && !title.isBlank();
+        boolean hasCategory = category != null && !category.isBlank();
+
+        if (hasTitle && hasCategory) {
+            games = gameRepository.findByTitleContainingIgnoreCaseAndCategory(title.trim(), category.trim(), pageable);
+        } else if (hasTitle) {
+            games = gameRepository.findByTitleContainingIgnoreCase(title.trim(), pageable);
+        } else if (hasCategory) {
+            games = gameRepository.findByCategory(category.trim(), pageable);
+        } else {
+            games = gameRepository.findAll(pageable);
+        }
+
+        return games.map(gameMapper::toDto);
     }
 
     public GameDto findById(Long id) {

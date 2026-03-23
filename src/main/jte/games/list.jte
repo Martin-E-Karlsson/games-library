@@ -1,4 +1,8 @@
 @param java.util.List<org.example.gameslibrary.dto.GameDto> games
+@param int currentPage
+@param int totalPages
+@param String title = null
+@param String category = null
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,6 +13,20 @@
 <body>
 <h1>Games Library</h1>
 <a href="/games/create">Add New Game</a>
+
+<h2>Filter</h2>
+<form action="/games" method="get">
+    <div>
+        <label for="title">Title:</label>
+        <input type="text" id="title" name="title" value="${title != null ? title : ""}">
+    </div>
+    <div>
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" value="${category != null ? category : ""}">
+    </div>
+    <button type="submit">Search</button>
+    <a href="/games">Clear</a>
+</form>
 
 <table>
     <thead>
@@ -39,5 +57,17 @@
     @endfor
     </tbody>
 </table>
+
+<div>
+    @if(currentPage > 0)
+        <a href="/games?page=${currentPage - 1}${title != null ? "&title=" + title : ""}${category != null ? "&category=" + category : ""}">Previous</a>
+    @endif
+
+    <span>Page ${currentPage + 1} of ${totalPages}</span>
+
+    @if(currentPage < totalPages - 1)
+        <a href="/games?page=${currentPage + 1}${title != null ? "&title=" + title : ""}${category != null ? "&category=" + category : ""}">Next</a>
+    @endif
+</div>
 </body>
 </html>

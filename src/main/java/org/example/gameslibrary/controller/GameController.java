@@ -12,8 +12,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/games")
@@ -28,9 +29,16 @@ public class GameController {
     }
 
     @GetMapping
-    public String listGames(Model model) {
-        List<GameDto> games = gameService.findAll();
-        model.addAttribute("games", games);
+    public String listGames(@RequestParam(required = false) String title,
+                            @RequestParam(required = false) String category,
+                            @RequestParam(defaultValue = "0") int page,
+                            Model model) {
+        Page<GameDto> gamePage = gameService.findAll(title, category, PageRequest.of(page, 20));
+        model.addAttribute("games", gamePage.getContent());
+        model.addAttribute("currentPage", gamePage.getNumber());
+        model.addAttribute("totalPages", gamePage.getTotalPages());
+        model.addAttribute("title", title);
+        model.addAttribute("category", category);
         return "games/list";
     }
 
